@@ -1,0 +1,26 @@
+Summary of Dostt App SRS (Software Requirements Specification)
+Purpose and Scope: The Dostt app is a mobile platform to connect users with paid female companions for non-vulgar audio (10 coins/min) and video (60 coins/min) conversations, while keeping users unaware of the paid nature. Companions earn 90 paise/min (audio) and 5 INR/min (video). Features include a splash screen, login (username only), home page (companion list, call options), call history, recharge, and profile management. The app enforces a respectful environment.
+Key Functional Requirements:
+	•	Splash Screen: Displays logo for 2 seconds.
+	•	Login: Username-based, no password.
+	•	Home Page: Lists companions (photo, name, languages, interests), audio/video call buttons, “Random” call option, coin balance, and navigation bar (Home, Call Logs, Profile).
+	•	Call History: Logs calls with name, date, time, duration, and call type.
+	•	Recharge: Wallet management, coin purchase, transaction history.
+	•	Profile: Shows user ID, wallet, transactions, help, privacy, logout, and app version.
+	•	Calls: Real-time coin deduction, call termination at 0 balance, and logging.
+	•	Moderation: No vulgar content; reporting mechanism for users.
+Non-Functional Requirements:
+	•	Performance: Home page loads in 3s, call latency <500ms.
+	•	Security: Encrypt call data, secure user data storage.
+	•	Usability: Dark theme, supports Hindi/Marathi.
+	•	Reliability: 99.9% uptime, handles 10,000 concurrent users.
+	•	Compatibility: Android 8.0+, portrait/landscape support.
+Interfaces:
+	•	Dark theme UI, distinct button colors (e.g., yellow for calls, purple for random).
+	•	Uses device mic/camera, integrates with payment gateway (e.g., Razorpay) and WebRTC for calls.
+	•	HTTPS for secure communication.
+Other Requirements:
+	•	Scalability for 100,000 users in the first year.
+	•	Legal compliance for paid services in India, companions must be 18+.
+	•	Help & Support section with FAQs.
+This summary captures the core requirements for the Dostt app as outlined in the SRS. Let me know if you need further details!
