@@ -5,8 +5,6 @@ import {
   transactions, type Transaction, type InsertTransaction
 } from "@shared/schema";
 import { sampleCompanions } from "../client/src/utils/mock-data";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -30,93 +28,111 @@ export interface IStorage {
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
 }
 
-export class DatabaseStorage implements IStorage {
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private companions: Map<number, Companion>;
+  private calls: Map<number, Call>;
+  private transactions: Map<number, Transaction>;
+  
+  private userIdCounter: number;
+  private callIdCounter: number;
+  private transactionIdCounter: number;
+
+  constructor() {
+    this.users = new Map();
+    this.companions = new Map();
+    this.calls = new Map();
+    this.transactions = new Map();
+    
+    this.userIdCounter = 1;
+    this.callIdCounter = 1;
+    this.transactionIdCounter = 1;
+    
+    // Initialize with sample companions
+    this.initCompanions();
+  }
+
+  private initCompanions() {
+    sampleCompanions.forEach(companion => {
+      this.companions.set(companion.id, companion);
+    });
+  }
+
   // User operations
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username,
+    );
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values({
-        ...userData,
-        coins: 750, // Start with 750 coins
-      })
-      .returning();
+    const id = this.userIdCounter++;
+    const user: User = { ...userData, id, coins: 750 }; // Start with 750 coins
+    this.users.set(id, user);
     return user;
   }
   
   async updateUserCoins(id: number, coins: number): Promise<User | undefined> {
-    const [updatedUser] = await db
-      .update(users)
-      .set({ coins })
-      .where(eq(users.id, id))
-      .returning();
-    return updatedUser || undefined;
+    const user = await this.getUser(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, coins };
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
   
   // Companion operations
   async getCompanions(): Promise<Companion[]> {
-    return await db.select().from(companions);
+    return Array.from(this.companions.values());
   }
   
   async getCompanion(id: number): Promise<Companion | undefined> {
-    const [companion] = await db.select().from(companions).where(eq(companions.id, id));
-    return companion || undefined;
+    return this.companions.get(id);
   }
   
   // Call operations
   async getCalls(): Promise<Call[]> {
-    return await db.select().from(calls);
+    return Array.from(this.calls.values());
   }
   
   async getCallsByUserId(userId: number): Promise<Call[]> {
-    return await db.select().from(calls).where(eq(calls.userId, userId));
+    return Array.from(this.calls.values()).filter(
+      (call) => call.userId === userId
+    );
   }
   
   async createCall(callData: InsertCall): Promise<Call> {
-    const [call] = await db.insert(calls).values(callData).returning();
+    const id = this.callIdCounter++;
+    const call: Call = { ...callData, id };
+    this.calls.set(id, call);
     return call;
   }
   
   // Transaction operations
   async getTransactions(): Promise<Transaction[]> {
-    return await db.select().from(transactions);
+    return Array.from(this.transactions.values());
   }
   
   async getTransactionsByUserId(userId: number): Promise<Transaction[]> {
-    return await db.select().from(transactions).where(eq(transactions.userId, userId));
+    return Array.from(this.transactions.values()).filter(
+      (transaction) => transaction.userId === userId
+    );
   }
   
   async createTransaction(transactionData: InsertTransaction): Promise<Transaction> {
-    const [transaction] = await db.insert(transactions).values(transactionData).returning();
+    const id = this.transactionIdCounter++;
+    const transaction: Transaction = { 
+      ...transactionData, 
+      id, 
+      timestamp: new Date() 
+    };
+    this.transactions.set(id, transaction);
     return transaction;
   }
 }
 
-// Initialize the database with sample companions
-async function initializeCompanions() {
-  try {
-    const existingCompanions = await db.select().from(companions);
-    
-    // Only seed if no companions exist yet
-    if (existingCompanions.length === 0) {
-      console.log("Seeding companions data...");
-      await db.insert(companions).values(sampleCompanions);
-    }
-  } catch (error) {
-    console.error("Error initializing companions:", error);
-  }
-}
-
-// Initialize the database
-initializeCompanions();
-
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();

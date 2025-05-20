@@ -33,9 +33,6 @@ export const transactions = pgTable("transactions", {
   userId: integer("user_id").notNull(),
   amount: integer("amount").notNull(),
   coins: integer("coins").notNull(),
-  paymentMethod: text("payment_method").default("card"),
-  cryptoCurrency: text("crypto_currency"),
-  cryptoAmount: text("crypto_amount"),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
 });
 
